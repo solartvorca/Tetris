@@ -236,6 +236,16 @@ body { overflow-y:auto; }
       <a class="play-btn" href="index.html">Играть →</a>
     </div>
 
+    <!-- Dolphin -->
+    <div class="card" style="--accent:rgba(85,181,216,0.4)">
+      <div class="card-num">Игра V</div>
+      <div class="card-title">Дельфин</div>
+      <div class="card-sub">Нейрогенез · Аркада</div>
+      <div class="glyphs" id="glyphsDolphin"></div>
+      <div class="card-desc">Дельфин плывёт вперёд — держи экран, чтобы нырять вверх. Собирай нужные фигуры, избегай чужих. Фон меняется с каждой группой букв.</div>
+      <a class="play-btn" href="dolphin.html">Играть →</a>
+    </div>
+
   </div>
 
   <div class="footnote">Нажми на карточку или кнопку, чтобы открыть игру</div>
@@ -261,7 +271,8 @@ function fillGlyphs(id, codes) {
 fillGlyphs('glyphsSorter', [1,3,5,7,9]);
 fillGlyphs('glyphsQuiz',   [2,4,6,8,1]);
 fillGlyphs('glyphsMatch',  [3,3,3,6,9]);
-fillGlyphs('glyphsTetris', [1,2,3,4,5]);
+fillGlyphs('glyphsTetris',  [1,2,3,4,5]);
+fillGlyphs('glyphsDolphin', [1,3,5,7,9]);
 
 // Click anywhere on card goes to link
 document.querySelectorAll('.card').forEach(card => {

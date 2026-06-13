@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Нейрогенез · Дельфин</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@200;300;400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a050f;overflow:hidden;touch-action:none;font-family:'Inter',sans-serif;user-select:none;}
+canvas{display:block;position:fixed;inset:0;z-index:1;}
+
+.ov{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,5,20,0.95);transition:opacity .5s;}
+.ov.gone{opacity:0;pointer-events:none;}
+.serif{font-family:'Cormorant Garamond',serif;}
+.btn{border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.65);letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all .35s;font-family:'Inter',sans-serif;padding:13px 38px;font-size:11px;margin:5px;}
+.btn:hover,.btn:active{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.4);color:#fff;letter-spacing:5px;}
+.btn.gold{border-color:rgba(255,215,0,0.5);color:#ffd700;font-size:12px;letter-spacing:5px;padding:16px 52px;margin-bottom:8px;}
+.btn.gold:hover{background:rgba(255,215,0,0.1);border-color:#ffd700;}
+.btn.sm{padding:8px 22px;font-size:9px;letter-spacing:2px;}
+
+.topbar{position:fixed;top:0;left:0;right:0;z-index:5;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:rgba(10,5,20,0.88);pointer-events:none;}
+.topbar.hidden{display:none;}
+
+#tblBtn,#exitBtn{pointer-events:all;}
+#tblBtn{border:1px solid rgba(255,255,255,0.14);border-radius:18px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.45);font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:5px 11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .3s;}
+#tblBtn:hover{color:rgba(255,255,255,0.75);border-color:rgba(255,255,255,0.3);}
+#exitBtn{border:1px solid rgba(255,60,60,0.35);border-radius:18px;background:rgba(255,30,30,0.1);color:rgba(255,100,100,0.7);font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:5px 11px;cursor:pointer;font-family:'Inter',sans-serif;transition:all .3s;}
+#exitBtn:hover{background:rgba(255,30,30,0.2);color:#ff6666;}
+
+#livesEl{display:flex;gap:4px;align-items:center;}
+.heart{font-size:16px;transition:transform .2s;}
+.heart.dead{opacity:0.15;filter:grayscale(1);}
+
+#progEl{display:flex;gap:4px;align-items:center;}
+.pdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);transition:all .3s;}
+.pdot.on{background:#ffd700;border-color:#ffd700;box-shadow:0 0 6px #ffd700;}
+
+/* Level-up card */
+#oLevelup .card{background:rgba(15,8,35,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:28px 36px;text-align:center;max-width:340px;margin:0 16px;}
+/* Table overlay */
+#oTable{overflow-y:auto;padding:16px;}
+.tbl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:400px;width:100%;}
+.tbl-card{background:rgba(255,255,255,0.04);border-radius:12px;padding:12px 8px;text-align:center;border:1px solid rgba(255,255,255,0.07);}
+.tbl-card .tl{font-family:'Cormorant Garamond',serif;font-size:28px;color:#ffd700;margin-bottom:6px;}
+.tbl-card .tc{font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:2px;margin-top:4px;}
+
+a.hub{position:fixed;top:14px;left:14px;z-index:10;border:1px solid rgba(255,255,255,0.07);border-radius:16px;background:rgba(10,5,20,0.6);color:rgba(255,255,255,0.22);font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:5px 11px;cursor:pointer;text-decoration:none;font-family:'Inter',sans-serif;transition:all .3s;}
+a.hub:hover{color:rgba(255,255,255,0.55);border-color:rgba(255,255,255,0.18);}
+</style>
+</head>
+<body>
+
+<!-- Menu -->
+<div class="ov" id="oMenu">
+  <div style="text-align:center;margin-bottom:36px">
+    <div style="font-size:52px;margin-bottom:4px">🐬</div>
+    <h1 class="serif" style="font-size:clamp(26px,6vw,42px);color:rgba(255,255,255,0.78);letter-spacing:.12em;font-weight:300;margin-bottom:8px">Нейрогенез</h1>
+    <p class="serif" style="font-size:clamp(13px,3vw,18px);color:rgba(255,255,255,0.24);letter-spacing:.3em;font-style:italic">Дельфин</p>
+    <p style="font-size:9px;color:rgba(255,255,255,0.12);letter-spacing:2.5px;margin-top:16px;text-transform:uppercase">Собирай нужную фигуру · Запомни таблицу</p>
+  </div>
+  <button class="btn gold" onclick="startGame()">Нырнуть</button>
+  <button class="btn" onclick="openTable()">Таблица Нейрогенез</button>
+  <div style="font-size:8px;color:rgba(255,255,255,0.1);letter-spacing:2px;margin-top:20px" id="hiEl"></div>
+</div>
+
+<!-- Level-up -->
+<div class="ov gone" id="oLevelup">
+  <div class="card">
+    <p style="font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:4px;text-transform:uppercase;margin-bottom:12px">Освоено</p>
+    <canvas id="cardCanvas" width="260" height="140" style="display:block;margin:0 auto 14px;border-radius:10px;"></canvas>
+    <p id="luLetters" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:rgba(255,255,255,0.55);letter-spacing:.2em;margin-bottom:4px"></p>
+    <p id="luGroup" style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:3px;margin-bottom:18px"></p>
+    <button class="btn gold" onclick="resumeAfterLevelup()">Дальше →</button>
+  </div>
+</div>
+
+<!-- Game over -->
+<div class="ov gone" id="oGameover">
+  <p style="font-size:8px;color:rgba(255,255,255,0.16);letter-spacing:4px;text-transform:uppercase;margin-bottom:12px">Игра окончена</p>
+  <div style="font-size:40px;margin-bottom:8px">🐬</div>
+  <h2 class="serif" style="font-size:clamp(28px,6vw,44px);color:rgba(255,255,255,0.55);letter-spacing:.14em;font-weight:300;margin-bottom:8px">Конец заплыва</h2>
+  <p id="goScore" class="serif" style="font-size:20px;color:rgba(255,255,255,0.28);letter-spacing:3px;font-style:italic;margin-bottom:4px"></p>
+  <p id="goHi" style="font-size:9px;color:rgba(255,255,255,0.14);letter-spacing:2px;margin-bottom:10px"></p>
+  <p id="goLetters" style="font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:2px;margin-bottom:28px"></p>
+  <button class="btn gold" onclick="startGame()">Снова</button>
+  <button class="btn sm" style="margin-top:4px" onclick="goMenu()">← Меню</button>
+</div>
+
+<!-- Table -->
+<div class="ov gone" id="oTable">
+  <p style="font-size:8px;color:rgba(255,255,255,0.2);letter-spacing:4px;text-transform:uppercase;margin-bottom:16px">Таблица Нейрогенез</p>
+  <div class="tbl-grid" id="tblGrid"></div>
+  <button class="btn sm" style="margin-top:20px" onclick="closeTable()">← Закрыть</button>
+</div>
+
+<!-- In-game UI -->
+<div class="topbar hidden" id="topbar">
+  <div id="livesEl"></div>
+  <div style="text-align:center">
+    <div id="targetEl" style="display:flex;align-items:center;gap:6px;justify-content:center">
+      <canvas id="targetCanvas" width="38" height="38" style="border-radius:6px;background:rgba(255,255,255,0.04);"></canvas>
+      <div>
+        <div id="targetLetter" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#ffd700;line-height:1"></div>
+        <div id="targetLabel" style="font-size:7px;color:rgba(255,255,255,0.2);letter-spacing:2px;text-transform:uppercase">собери 5</div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+    <div style="display:flex;gap:4px;align-items:center">
+      <button id="tblBtn" onclick="openTable()">Открыть</button>
+      <button id="exitBtn" onclick="goMenu()">Выйти</button>
+    </div>
+    <div id="progEl" style="display:flex;gap:4px;padding-right:2px"></div>
+  </div>
+</div>
+
+<a class="hub" href="hub.html">← игры</a>
+<canvas id="c"></canvas>
+
+<script>
+'use strict';
+
+// ── Data ──────────────────────────────────────────────────────────────────
+const G = {
+  '1':{letters:['И','С','Э'],    shape:'circle',   col:'#ff5555', name:'Красный'},
+  '2':{letters:['А','Й','П'],    shape:'circle',   col:'#ffd700', name:'Жёлтый'},
+  '3':{letters:['Т','Б','З'],    shape:'circle',   col:'#2ecc71', name:'Зелёный'},
+  '4':{letters:['М','Ю','В'],    shape:'circle',   col:'#1ab8b8', name:'Бирюзовый'},
+  '5':{letters:['К','Ф','Я'],    shape:'circle',   col:'#4d88ff', name:'Синий'},
+  '6':{letters:['Д','Л','Х'],    shape:'circle',   col:'#87ceeb', name:'Голубой'},
+  '7':{letters:['Ы','Е','О'],    shape:'circle',   col:'#90ee90', name:'Светло-зелёный'},
+  '8':{letters:['Ц','Ь','Ё'],    shape:'circle',   col:'#b0b8cc', name:'Серый'},
+  '9':{letters:['Н','Ъ','Г'],    shape:'circle',   col:'#ff85c2', name:'Розовый'},
+  'T':{letters:['У','Ч','Щ'],    shape:'triangle', col:'#da70d6', name:'Треугольник'},
+  'D':{letters:['Ж','Р','Ш'],    shape:'diamond',  col:'#ffa040', name:'Ромб'},
+};
+const SEQ = ['И','С','Э','А','Й','П','Т','Б','З','М','Ю','В','К','Ф','Я','Д','Л','Х','Ы','Е','О','Ц','Ь','Ё','Н','Ъ','Г','У','Ч','Щ','Ж','Р','Ш'];
+const LGRP = {};
+for (const [k,v] of Object.entries(G)) v.letters.forEach(l=>LGRP[l]=k);
+
+const THEMES = {
+  '1':{top:'#200500',bot:'#0a0200',ptype:'lava',   pcol:'#ff6600'},
+  '2':{top:'#201000',bot:'#0a0500',ptype:'sand',   pcol:'#ffc000'},
+  '3':{top:'#061500',bot:'#020800',ptype:'leaf',   pcol:'#3edc81'},
+  '4':{top:'#001a1a',bot:'#000808',ptype:'bubble', pcol:'#1ab8b8'},
+  '5':{top:'#000d28',bot:'#000510',ptype:'bubble', pcol:'#4d88ff'},
+  '6':{top:'#061020',bot:'#030810',ptype:'cloud',  pcol:'#a0c8f0'},
+  '7':{top:'#061205',bot:'#030802',ptype:'petal',  pcol:'#90ee90'},
+  '8':{top:'#0e0e18',bot:'#060610',ptype:'cloud',  pcol:'#9090a8'},
+  '9':{top:'#200010',bot:'#0a0008',ptype:'petal',  pcol:'#ff85c2'},
+  'T':{top:'#0e0020',bot:'#060010',ptype:'star',   pcol:'#da70d6'},
+  'D':{top:'#180800',bot:'#080400',ptype:'star',   pcol:'#ffa040'},
+};
+
+function ca(hex,a){return `rgba(${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)},${a.toFixed(3)})`;}
+
+// ── Canvas + layout ───────────────────────────────────────────────────────
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+let W,H,SR; // SR = shape radius
+
+const HUD=56;
+function resize(){
+  W=canvas.width=innerWidth; H=canvas.height=innerHeight;
+  SR=Math.max(22,Math.min(34,Math.min(W,H)*0.062));
+}
+window.addEventListener('resize',()=>{resize();if(state==='play')initBgP(curCode());});
+resize();
+
+// ── Audio ─────────────────────────────────────────────────────────────────
+let AC=null;
+function initAC(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}
+
+function playTone(hz,dur=0.7,vol=0.14){
+  if(!AC)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine'; o.frequency.value=hz;
+  const t=AC.currentTime;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.06);
+  g.gain.setValueAtTime(vol,t+dur-0.15); g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+  o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur);
+}
+const FREQ={
+  '1':174,'2':285,'3':369,'4':417,'5':528,'6':639,'7':741,'8':852,'9':963,'T':528,'D':396
+};
+function playCollect(code){playTone(FREQ[code],0.65,0.16);}
+function playMiss(){playTone(160,0.2,0.1);setTimeout(()=>playTone(100,0.2,0.08),120);}
+function playSplash(){playTone(320,0.12,0.08);playTone(500,0.08,0.05);}
+function playLevelup(){[FREQ[curCode()],FREQ[curCode()]*1.25,FREQ[curCode()]*1.5].forEach((f,i)=>setTimeout(()=>playTone(f,0.55,0.14),i*160));}
+
+// ── State ─────────────────────────────────────────────────────────────────
+let state='menu'; // menu|play|levelup|gameover
+let dolphin={x:0,y:0,vy:0};
+let shapes=[];
+let particles=[];
+let bgP=[];
+let pressing=false;
+let spawnT=0, spawnIv=1.7;
+let correctCount=0; // 0-4 → 5 = level up
+let letterIdx=0;
+let lives=3;
+let score=0;
+let streak=0;
+let animId=0;
+let prevTs=0;
+let shakeMag=0;
+let bgTransition=0; // 0→1 smooth theme change
+let prevTheme=null;
+let lettersLearned=JSON.parse(localStorage.getItem('dolph_ll')||'[]');
+let hi=+localStorage.getItem('dolph_hi')||0;
+let spawnGuaranteeTimer=0; // ensure a correct shape appears regularly
+let completedLetter=null; // letter just mastered (for levelup card)
+
+const DOLPH_W=58, DOLPH_H=28; // dolphin hitbox half-sizes
+
+function curLetter(){return SEQ[letterIdx%SEQ.length];}
+function curCode(){return LGRP[curLetter()];}
+function curGroup(){return G[curCode()];}
+
+// ── Background particles ──────────────────────────────────────────────────
+function initBgP(code){
+  const th=THEMES[code];
+  bgP=[];
+  const n=code==='T'||code==='D'?28:18;
+  for(let i=0;i<n;i++){
+    bgP.push({
+      x:Math.random()*W, y:Math.random()*H,
+      sz:3+Math.random()*10, spd:15+Math.random()*35,
+      ph:Math.random()*Math.PI*2, col:th.pcol,
+      type:th.ptype, alpha:0.15+Math.random()*0.5
+    });
+  }
+}
+
+function updateBgP(dt){
+  bgP.forEach(p=>{
+    switch(p.type){
+      case 'lava': p.y-=p.spd*dt*0.25;p.x+=Math.sin(p.ph+=dt*0.8)*0.6;if(p.y<-50){p.y=H+20;p.x=Math.random()*W;}break;
+      case 'bubble':p.y-=p.spd*dt;p.x+=Math.sin(p.ph+=dt*1.5)*0.5;if(p.y<-40){p.y=H+10;p.x=Math.random()*W;}break;
+      case 'leaf':case'petal':p.y+=p.spd*dt*0.4;p.x+=Math.sin(p.ph+=dt*0.9)*1.0;p.ph+=dt;if(p.y>H+30){p.y=-20;p.x=Math.random()*W;}break;
+      case 'cloud':p.x-=p.spd*dt*0.4;if(p.x<-120){p.x=W+40;p.y=HUD+Math.random()*(H-HUD)*0.5;}break;
+      case 'sand':p.x+=p.spd*dt;p.y+=Math.sin(p.ph+=dt)*0.4;if(p.x>W+20){p.x=-10;p.y=Math.random()*H;}break;
+      case 'star':p.alpha=0.12+Math.abs(Math.sin(p.ph+=dt*(0.5+p.spd*0.01)))*0.55;break;
+    }
+  });
+}
+
+function drawBg(code){
+  const th=THEMES[code];
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,th.top); g.addColorStop(1,th.bot);
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+  bgP.forEach(p=>{
+    ctx.save(); ctx.globalAlpha=p.alpha;
+    ctx.fillStyle=p.col; ctx.strokeStyle=p.col;
+    switch(p.type){
+      case 'lava':
+        ctx.beginPath();ctx.ellipse(p.x,p.y,p.sz,p.sz*0.6,0,0,Math.PI*2);ctx.fill();break;
+      case 'bubble':
+        ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);
+        ctx.strokeStyle=p.col;ctx.lineWidth=1;ctx.stroke();break;
+      case 'leaf':
+        ctx.translate(p.x,p.y);ctx.rotate(p.ph);
+        ctx.beginPath();ctx.ellipse(0,0,p.sz*0.35,p.sz,0,0,Math.PI*2);ctx.fill();break;
+      case 'petal':
+        ctx.translate(p.x,p.y);ctx.rotate(p.ph);
+        ctx.beginPath();ctx.ellipse(0,0,p.sz*0.45,p.sz*0.65,0,0,Math.PI*2);ctx.fill();break;
+      case 'cloud':
+        ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);
+        ctx.arc(p.x+p.sz,p.y-p.sz*0.3,p.sz*0.7,0,Math.PI*2);
+        ctx.arc(p.x+p.sz*1.8,p.y,p.sz*0.55,0,Math.PI*2);
+        ctx.fillStyle=`rgba(200,210,240,${p.alpha*0.6})`;ctx.fill();break;
+      case 'sand':
+        ctx.beginPath();ctx.arc(p.x,p.y,p.sz*0.25,0,Math.PI*2);ctx.fill();break;
+      case 'star':
+        ctx.beginPath();
+        for(let k=0;k<5;k++){const a=k*Math.PI*0.4-Math.PI/2,a2=a+Math.PI*0.2;
+          if(k===0)ctx.moveTo(p.x+Math.cos(a)*p.sz,p.y+Math.sin(a)*p.sz);
+          else ctx.lineTo(p.x+Math.cos(a)*p.sz,p.y+Math.sin(a)*p.sz);
+          ctx.lineTo(p.x+Math.cos(a2)*p.sz*0.4,p.y+Math.sin(a2)*p.sz*0.4);}
+        ctx.closePath();ctx.fill();break;
+    }
+    ctx.restore();
+  });
+}
+
+// ── Dolphin ───────────────────────────────────────────────────────────────
+function drawDolphin(x,y,vy,letter,t){
+  ctx.save();
+  ctx.translate(x,y);
+  const tilt=Math.max(-0.38,Math.min(0.38,vy/680));
+  ctx.rotate(tilt);
+  const wag=Math.sin(t*4.8)*0.28;
+
+  // Tail
+  ctx.save();ctx.translate(-DOLPH_W+4,0);ctx.rotate(wag);
+  ctx.fillStyle='#4a9cc8';ctx.beginPath();
+  ctx.moveTo(0,0);ctx.bezierCurveTo(-6,-4,-18,-16,-14,-22);
+  ctx.bezierCurveTo(-7,-16,-1,-6,0,0);
+  ctx.bezierCurveTo(-1,6,-7,16,-14,22);
+  ctx.bezierCurveTo(-18,16,-6,4,0,0);ctx.fill();ctx.restore();
+
+  // Body
+  ctx.fillStyle='#55b5d8';
+  ctx.beginPath();ctx.ellipse(0,0,DOLPH_W-4,DOLPH_H,0,0,Math.PI*2);ctx.fill();
+
+  // Belly
+  ctx.fillStyle='#c0e8f8';
+  ctx.beginPath();ctx.ellipse(10,6,DOLPH_W*0.52,DOLPH_H*0.52,0.15,0,Math.PI*2);ctx.fill();
+
+  // Dorsal fin
+  ctx.fillStyle='#3d90b0';ctx.beginPath();
+  ctx.moveTo(-2,-DOLPH_H);ctx.bezierCurveTo(5,-DOLPH_H-22,20,-DOLPH_H-18,24,-DOLPH_H);
+  ctx.bezierCurveTo(16,-DOLPH_H,4,-DOLPH_H,-2,-DOLPH_H);ctx.fill();
+
+  // Pectoral fin
+  ctx.fillStyle='#3d90b0';ctx.beginPath();
+  ctx.moveTo(14,DOLPH_H*0.35);ctx.bezierCurveTo(22,DOLPH_H*0.9,28,DOLPH_H*1.3,18,DOLPH_H*1.4);
+  ctx.bezierCurveTo(10,DOLPH_H*1.2,10,DOLPH_H*0.7,14,DOLPH_H*0.35);ctx.fill();
+
+  // Snout
+  ctx.fillStyle='#55b5d8';ctx.beginPath();
+  ctx.moveTo(DOLPH_W-4,0);ctx.bezierCurveTo(DOLPH_W+4,-6,DOLPH_W+14,-4,DOLPH_W+16,2);
+  ctx.bezierCurveTo(DOLPH_W+14,7,DOLPH_W+4,7,DOLPH_W-4,0);ctx.fill();
+
+  // Eye
+  ctx.fillStyle='#0d0d20';ctx.beginPath();ctx.arc(DOLPH_W*0.52,-DOLPH_H*0.38,4.5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(DOLPH_W*0.52+1,-DOLPH_H*0.38-1,2,0,Math.PI*2);ctx.fill();
+
+  // Smile
+  ctx.strokeStyle='#0d0d20';ctx.lineWidth=1.8;ctx.beginPath();
+  ctx.arc(DOLPH_W+5,4,8,Math.PI*0.1,Math.PI*0.6);ctx.stroke();
+
+  // Letter badge
+  const gc=G[curCode()];
+  const bc=gc?gc.col:'#ffd700';
+  const br=15;
+  ctx.beginPath();ctx.arc(-2,0,br,0,Math.PI*2);
+  ctx.fillStyle='rgba(8,4,22,0.88)';ctx.fill();
+  ctx.strokeStyle=bc;ctx.lineWidth=2;ctx.stroke();
+  ctx.shadowColor=bc;ctx.shadowBlur=10;
+  ctx.fillStyle='#ffd700';
+  ctx.font=`bold ${br}px monospace`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(letter,-2,1.5);ctx.shadowBlur=0;
+
+  ctx.restore();
+}
+
+// ── Shapes ────────────────────────────────────────────────────────────────
+function spawnShape(forceCorrect){
+  const isCorrect=forceCorrect||(Math.random()<0.32);
+  let code;
+  if(isCorrect){code=curCode();}
+  else{
+    const keys=Object.keys(G).filter(k=>k!==curCode());
+    code=keys[Math.floor(Math.random()*keys.length)];
+  }
+  const gr=G[code];
+  const playH=H-HUD-60;
+  const y=HUD+30+Math.random()*playH;
+  shapes.push({x:W+SR+20,y,vy:(Math.random()-0.5)*18,
+    code,type:gr.shape,col:gr.col,correct:isCorrect,
+    scale:1,alpha:1,hit:false});
+}
+
+function drawShapeObj(s){
+  const r=SR*s.scale;
+  ctx.save(); ctx.translate(s.x,s.y); ctx.globalAlpha=s.alpha;
+
+  // Card background
+  const pad=8;
+  ctx.beginPath();ctx.roundRect(-r-pad,-r-pad,(r+pad)*2,(r+pad)*2,8);
+  ctx.fillStyle='rgba(10,5,25,0.82)';ctx.fill();
+  ctx.strokeStyle=ca(s.col,0.35);ctx.lineWidth=1.5;ctx.stroke();
+
+  // Shape
+  ctx.shadowColor=s.col;ctx.shadowBlur=14;
+  ctx.fillStyle=s.col+'bb';ctx.strokeStyle='rgba(255,255,255,0.32)';ctx.lineWidth=1.5;
+  ctx.beginPath();
+  if(s.type==='circle'){ctx.arc(0,0,r,0,Math.PI*2);}
+  else if(s.type==='triangle'){ctx.moveTo(0,-r);ctx.lineTo(r*.88,r*.62);ctx.lineTo(-r*.88,r*.62);ctx.closePath();}
+  else{ctx.moveTo(0,-r);ctx.lineTo(r*.75,0);ctx.lineTo(0,r);ctx.lineTo(-r*.75,0);ctx.closePath();}
+  ctx.fill();ctx.stroke();ctx.shadowBlur=0;
+
+  // Code label
+  const label=s.code==='T'?'△':s.code==='D'?'◆':s.code;
+  const fs=Math.max(9,r*0.72);
+  ctx.font=`bold ${fs}px monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(0,0,0,0.75)';ctx.fillText(label,1,2);
+  ctx.fillStyle='#fff';ctx.fillText(label,0,1);
+
+  ctx.restore();
+}
+
+// ── Particles ─────────────────────────────────────────────────────────────
+function burst(x,y,col,count=10){
+  for(let i=0;i<count;i++){
+    const a=Math.random()*Math.PI*2, spd=60+Math.random()*130;
+    particles.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:2+Math.random()*4,col,alpha:1,life:0.6+Math.random()*0.4});
+  }
+}
+function updateParticles(dt){
+  particles=particles.filter(p=>{
+    p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=220*dt;p.alpha-=dt/p.life;return p.alpha>0;
+  });
+}
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.save();ctx.globalAlpha=Math.max(0,p.alpha);
+    ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.restore();
+  });
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────
+function updateHUD(){
+  const el=document.getElementById('livesEl');
+  el.innerHTML='';
+  for(let i=0;i<3;i++){
+    const h=document.createElement('span');h.className='heart'+(i>=lives?' dead':'');h.textContent='❤️';el.appendChild(h);
+  }
+  document.getElementById('targetLetter').textContent=curLetter();
+  const pr=document.getElementById('progEl');
+  pr.innerHTML='';
+  for(let i=0;i<5;i++){const d=document.createElement('div');d.className='pdot'+(i<correctCount?' on':'');pr.appendChild(d);}
+  updateTargetCanvas();
+}
+
+function updateTargetCanvas(){
+  const c=document.getElementById('targetCanvas');
+  const x=c.getContext('2d');
+  x.clearRect(0,0,38,38);
+  const gr=curGroup();
+  const r=12;
+  x.translate(19,19);
+  x.shadowColor=gr.col;x.shadowBlur=8;
+  x.fillStyle=gr.col+'cc';x.strokeStyle='rgba(255,255,255,0.3)';x.lineWidth=1.5;
+  x.beginPath();
+  if(gr.shape==='circle')x.arc(0,0,r,0,Math.PI*2);
+  else if(gr.shape==='triangle'){x.moveTo(0,-r);x.lineTo(r*.88,r*.62);x.lineTo(-r*.88,r*.62);x.closePath();}
+  else{x.moveTo(0,-r);x.lineTo(r*.75,0);x.lineTo(0,r);x.lineTo(-r*.75,0);x.closePath();}
+  x.fill();x.stroke();x.shadowBlur=0;
+  const lbl=curCode()==='T'?'△':curCode()==='D'?'◆':curCode();
+  x.fillStyle='rgba(0,0,0,0.7)';x.font='bold 10px monospace';x.textAlign='center';x.textBaseline='middle';x.fillText(lbl,1,1.5);
+  x.fillStyle='#fff';x.fillText(lbl,0,0.5);
+}
+
+// ── Level-up card ─────────────────────────────────────────────────────────
+function showLevelup(letter){
+  const code=LGRP[letter];
+  const gr=G[code];
+  document.getElementById('luLetters').textContent=gr.letters.join('  ·  ');
+  document.getElementById('luGroup').textContent=gr.name+' · код '+code;
+  const c=document.getElementById('cardCanvas');
+  const x=c.getContext('2d');
+  const w=c.width,h=c.height;
+  x.clearRect(0,0,w,h);
+  // Draw 3 letters of the group as shapes
+  gr.letters.forEach((l,i)=>{
+    x.save();x.translate(40+i*80,h/2+4);
+    const r=22;
+    x.shadowColor=gr.col;x.shadowBlur=12;
+    x.fillStyle=gr.col+'cc';x.strokeStyle='rgba(255,255,255,0.25)';x.lineWidth=1.5;
+    x.beginPath();
+    if(gr.shape==='circle')x.arc(0,0,r,0,Math.PI*2);
+    else if(gr.shape==='triangle'){x.moveTo(0,-r);x.lineTo(r*.88,r*.62);x.lineTo(-r*.88,r*.62);x.closePath();}
+    else{x.moveTo(0,-r);x.lineTo(r*.75,0);x.lineTo(0,r);x.lineTo(-r*.75,0);x.closePath();}
+    x.fill();x.stroke();x.shadowBlur=0;
+    x.fillStyle='rgba(0,0,0,0.7)';x.font='bold 13px monospace';x.textAlign='center';x.textBaseline='middle';x.fillText(l,1,2);
+    x.fillStyle='#fff';x.fillText(l,0,1);
+    x.restore();
+  });
+  // Code label below
+  x.fillStyle='rgba(255,255,255,0.2)';x.font='200 11px Inter,sans-serif';x.textAlign='center';x.textBaseline='top';
+  x.fillText(gr.name,w/2,h-18);
+
+  document.getElementById('oLevelup').classList.remove('gone');
+  state='levelup';
+}
+
+function resumeAfterLevelup(){
+  document.getElementById('oLevelup').classList.add('gone');
+  if(completedLetter&&!lettersLearned.includes(completedLetter)){
+    lettersLearned.push(completedLetter);
+    localStorage.setItem('dolph_ll',JSON.stringify(lettersLearned));
+  }
+  completedLetter=null;
+  correctCount=0;
+  shapes=[];
+  spawnT=0;
+  initBgP(curCode());
+  updateHUD();
+  state='play';
+  prevTs=performance.now();
+  animId=requestAnimationFrame(loop); // restart loop (stopped during levelup)
+}
+
+// ── Table overlay ─────────────────────────────────────────────────────────
+function buildTable(){
+  const grid=document.getElementById('tblGrid');
+  grid.innerHTML='';
+  SEQ.forEach(letter=>{
+    const code=LGRP[letter];
+    const gr=G[code];
+    const card=document.createElement('div');
+    card.className='tbl-card';
+    const learned=lettersLearned.includes(letter);
+    card.style.borderColor=learned?ca(gr.col,0.35):'rgba(255,255,255,0.07)';
+    card.innerHTML=`<div class="tl">${letter}</div>
+      <canvas width="40" height="40" style="display:block;margin:0 auto 4px;"></canvas>
+      <div class="tc">${gr.name}<br>${code}</div>`;
+    // Draw shape on mini canvas
+    const cv=card.querySelector('canvas');
+    const cx=cv.getContext('2d');
+    cx.translate(20,20);
+    const r=13;
+    cx.shadowColor=gr.col;cx.shadowBlur=8;
+    cx.fillStyle=gr.col+'cc';cx.beginPath();
+    if(gr.shape==='circle')cx.arc(0,0,r,0,Math.PI*2);
+    else if(gr.shape==='triangle'){cx.moveTo(0,-r);cx.lineTo(r*.88,r*.62);cx.lineTo(-r*.88,r*.62);cx.closePath();}
+    else{cx.moveTo(0,-r);cx.lineTo(r*.75,0);cx.lineTo(0,r);cx.lineTo(-r*.75,0);cx.closePath();}
+    cx.fill();cx.shadowBlur=0;
+    cx.fillStyle='rgba(0,0,0,0.7)';cx.font='bold 9px monospace';cx.textAlign='center';cx.textBaseline='middle';
+    const lbl=code==='T'?'△':code==='D'?'◆':code;
+    cx.fillText(lbl,1,1.5);cx.fillStyle='#fff';cx.fillText(lbl,0,0.5);
+    grid.appendChild(card);
+  });
+}
+
+let tableFromGame=false;
+function openTable(){tableFromGame=(state==='play');if(tableFromGame){state='paused';}buildTable();document.getElementById('oTable').classList.remove('gone');}
+function closeTable(){document.getElementById('oTable').classList.add('gone');if(tableFromGame){state='play';prevTs=performance.now();animId=requestAnimationFrame(loop);}tableFromGame=false;}
+
+// ── Screens ───────────────────────────────────────────────────────────────
+function goMenu(){
+  state='menu';
+  if(animId){cancelAnimationFrame(animId);animId=0;}
+  document.getElementById('topbar').classList.add('hidden');
+  document.getElementById('oMenu').classList.remove('gone');
+  document.getElementById('oGameover').classList.add('gone');
+  document.getElementById('oLevelup').classList.add('gone');
+  document.getElementById('hiEl').textContent=hi?`Рекорд: ${hi}`:'';
+}
+
+function startGame(){
+  initAC();
+  letterIdx=0; correctCount=0; lives=3; score=0; streak=0;
+  shapes=[]; particles=[]; shakeMag=0; pressing=false;
+  dolphin={x:W*0.2,y:H/2,vy:0};
+  spawnT=0; spawnIv=1.7; spawnGuaranteeTimer=0;
+  initBgP(curCode());
+  state='play';
+  document.getElementById('oMenu').classList.add('gone');
+  document.getElementById('oGameover').classList.add('gone');
+  document.getElementById('oLevelup').classList.add('gone');
+  document.getElementById('topbar').classList.remove('hidden');
+  updateHUD();
+  prevTs=performance.now();
+  if(animId)cancelAnimationFrame(animId);
+  animId=requestAnimationFrame(loop);
+}
+
+function gameOver(){
+  state='gameover';
+  if(animId){cancelAnimationFrame(animId);animId=0;}
+  if(score>hi){hi=score;localStorage.setItem('dolph_hi',hi);}
+  document.getElementById('topbar').classList.add('hidden');
+  document.getElementById('goScore').textContent=`${score} очков`;
+  document.getElementById('goHi').textContent=`Рекорд: ${hi}`;
+  document.getElementById('goLetters').textContent=`Освоено букв: ${lettersLearned.length} из ${SEQ.length}`;
+  document.getElementById('oGameover').classList.remove('gone');
+}
+
+function loseLife(){
+  if(lives<=0||state==='gameover')return;
+  lives--;
+  shakeMag=10; streak=0;
+  playMiss();
+  burst(dolphin.x,dolphin.y,'#ff5555',8);
+  const hearts=document.querySelectorAll('.heart');
+  if(hearts[lives])hearts[lives].classList.add('dead');
+  if(lives<=0)setTimeout(gameOver,400);
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────
+window.addEventListener('pointerdown',e=>{if(state==='play'){e.preventDefault();pressing=true;initAC();playSplash();}},{passive:false});
+window.addEventListener('pointerup',e=>{pressing=false;});
+window.addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='ArrowUp'){pressing=true;if(state==='play')initAC();}});
+window.addEventListener('keyup',e=>{if(e.code==='Space'||e.code==='ArrowUp')pressing=false;});
+
+// ── Game loop ─────────────────────────────────────────────────────────────
+const GRAVITY=820, THRUST=-750, MAX_VY=380;
+
+function loop(ts){
+  if(state!=='play'){prevTs=ts;return;}
+  animId=requestAnimationFrame(loop);
+  const dt=Math.min((ts-prevTs)/1000,0.05); prevTs=ts;
+  const t=ts/1000;
+
+  // Physics
+  if(pressing) dolphin.vy=Math.max(-MAX_VY,dolphin.vy+THRUST*dt);
+  else          dolphin.vy=Math.min(MAX_VY, dolphin.vy+GRAVITY*dt);
+  dolphin.y+=dolphin.vy*dt;
+
+  // Clamp top
+  if(dolphin.y<HUD+DOLPH_H+4){dolphin.y=HUD+DOLPH_H+4;dolphin.vy=Math.abs(dolphin.vy)*0.3;}
+  // Bottom = lose life
+  if(dolphin.y>H-DOLPH_H+10){
+    dolphin.y=H-DOLPH_H+10;dolphin.vy=-200;
+    loseLife();
+  }
+
+  // Spawn shapes
+  spawnT-=dt;
+  spawnGuaranteeTimer+=dt;
+  if(spawnT<=0){
+    const forceCorrect=spawnGuaranteeTimer>4.5;
+    spawnShape(forceCorrect);
+    if(forceCorrect)spawnGuaranteeTimer=0;
+    spawnT=spawnIv;
+  }
+  spawnIv=Math.max(0.75,spawnIv-0.0008); // gradually faster
+
+  const spd=160+score*0.08+letterIdx*12; // shape speed increases
+
+  // Update shapes
+  shapes.forEach(s=>{
+    s.x-=spd*dt;
+    s.y+=s.vy*dt;
+    // Bounce off edges
+    if(s.y<HUD+SR){s.y=HUD+SR;s.vy=Math.abs(s.vy);}
+    if(s.y>H-SR){s.y=H-SR;s.vy=-Math.abs(s.vy);}
+
+    if(s.hit){s.scale+=3*dt;s.alpha-=4*dt;return;}
+
+    // Collision with dolphin
+    const dx=s.x-dolphin.x, dy=s.y-dolphin.y;
+    const hitDist=SR*0.92+DOLPH_W*0.52;
+    if(Math.hypot(dx,dy)<hitDist){
+      s.hit=true;
+      if(s.correct){
+        score+=10*(1+Math.floor(streak/3));
+        streak++;
+        correctCount++;
+        burst(s.x,s.y,s.col,12);
+        playCollect(curCode());
+        if(correctCount>=5){
+          completedLetter=curLetter(); // save BEFORE increment
+          letterIdx++;
+          if(letterIdx>=SEQ.length){letterIdx=0;} // loop
+          showLevelup(completedLetter);
+          playLevelup();
+          spawnIv=Math.max(0.9,spawnIv+0.2);
+        } else {
+          updateHUD();
+        }
+      } else {
+        burst(s.x,s.y,'#ff5555',7);
+        loseLife();
+      }
+    }
+  });
+
+  shapes=shapes.filter(s=>s.x>-SR-30&&s.alpha>0);
+
+  // Background particles
+  updateBgP(dt);
+  updateParticles(dt);
+
+  // Shake
+  if(shakeMag>0)shakeMag=Math.max(0,shakeMag-shakeMag*8*dt);
+
+  // Draw
+  ctx.save();
+  if(shakeMag>0){ctx.translate((Math.random()-0.5)*shakeMag,(Math.random()-0.5)*shakeMag);}
+
+  drawBg(curCode());
+  shapes.forEach(drawShapeObj);
+  drawParticles();
+  drawDolphin(dolphin.x,dolphin.y,dolphin.vy,curLetter(),t);
+
+  // Score text (upper left of play area)
+  ctx.textAlign='left';ctx.textBaseline='top';
+  ctx.font=`200 11px 'Inter',sans-serif`;
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.fillText(score,GX()+2,HUD+4);
+
+  // Streak indicator
+  if(streak>=3){
+    ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.font=`300 11px 'Cormorant Garamond',serif`;
+    ctx.fillStyle=`rgba(255,215,0,${Math.min(1,streak*0.1)})`;
+    ctx.fillText(`★ серия ×${1+Math.floor(streak/3)}`,W/2,HUD+4);
+  }
+
+  ctx.restore();
+}
+
+function GX(){return dolphin.x;}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+// Build & show menu
+document.getElementById('hiEl').textContent=hi?`Рекорд: ${hi}`:'';
+
+// Draw dark canvas for menu background
+(function menuAnim(){
+  if(state!=='menu'&&state!=='gameover'){return;}
+  ctx.fillStyle='#0a050f';ctx.fillRect(0,0,W,H);
+  // Floating shapes
+  requestAnimationFrame(menuAnim);
+})();
+</script>
+</body>
+</html>
