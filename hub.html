@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>НейроАкадемия</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@200;300;400&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  height:100%;
+  background:#0a0a0f;
+  color:rgba(255,255,255,0.7);
+  font-family:'Inter',sans-serif;
+  overflow:hidden;
+}
+
+/* Scrollable only on small screens */
+body { overflow-y:auto; }
+
+.page {
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:60px 24px 80px;
+  position:relative;
+}
+
+/* Header */
+.brand {
+  text-align:center;
+  margin-bottom:60px;
+  position:relative;
+  z-index:2;
+}
+.brand h1 {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(28px,6vw,52px);
+  font-weight:300;
+  color:rgba(255,255,255,0.72);
+  letter-spacing:.14em;
+  margin-bottom:10px;
+}
+.brand p {
+  font-size:clamp(9px,2vw,11px);
+  color:rgba(255,255,255,0.18);
+  letter-spacing:.35em;
+  text-transform:uppercase;
+}
+.brand .sub {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(11px,2.5vw,16px);
+  color:rgba(255,255,255,0.2);
+  letter-spacing:.25em;
+  font-style:italic;
+  margin-top:6px;
+}
+
+/* Separator */
+.rule {
+  width:40px; height:1px;
+  background:linear-gradient(to right,transparent,rgba(255,255,255,0.15),transparent);
+  margin:0 auto 14px;
+}
+
+/* Cards grid */
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:18px;
+  width:100%;
+  max-width:860px;
+  position:relative; z-index:2;
+}
+
+.card {
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:16px;
+  padding:32px 26px 26px;
+  background:rgba(255,255,255,0.022);
+  display:flex; flex-direction:column;
+  transition:all .4s ease;
+  position:relative;
+  overflow:hidden;
+  text-decoration:none;
+  color:inherit;
+}
+.card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(to right,transparent,var(--accent,.5),transparent);
+  opacity:.5;
+  transition:opacity .4s;
+}
+.card:hover {
+  border-color:rgba(255,255,255,0.14);
+  background:rgba(255,255,255,0.038);
+  transform:translateY(-3px);
+}
+.card:hover::before { opacity:1; }
+
+.card-num {
+  font-family:'Cormorant Garamond',serif;
+  font-size:11px; font-weight:300;
+  color:rgba(255,255,255,0.18); letter-spacing:4px;
+  text-transform:uppercase; margin-bottom:18px;
+}
+.card-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(20px,3.5vw,28px); font-weight:300;
+  color:rgba(255,255,255,0.75); letter-spacing:.08em;
+  margin-bottom:6px;
+}
+.card-sub {
+  font-size:9px; color:rgba(255,255,255,0.2);
+  letter-spacing:3px; text-transform:uppercase;
+  margin-bottom:16px;
+}
+.card-desc {
+  font-size:11px; font-weight:200;
+  color:rgba(255,255,255,0.28); line-height:1.8;
+  letter-spacing:.5px; flex:1;
+  margin-bottom:24px;
+}
+
+/* Mini glyph preview */
+.glyphs {
+  display:flex; gap:8px; flex-wrap:wrap;
+  margin-bottom:22px;
+  min-height:32px;
+}
+.glyph {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:bold; color:#fff;
+  font-family:monospace;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+.play-btn {
+  align-self:flex-start;
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:30px; padding:9px 24px;
+  font-size:9px; letter-spacing:3px; text-transform:uppercase;
+  color:rgba(255,255,255,0.5);
+  background:transparent;
+  cursor:pointer; transition:all .3s;
+  font-family:'Inter',sans-serif;
+  text-decoration:none; display:inline-block;
+}
+.play-btn:hover {
+  border-color:rgba(255,255,255,0.35);
+  color:rgba(255,255,255,0.85);
+  background:rgba(255,255,255,0.04);
+  letter-spacing:4px;
+}
+
+/* Footer note */
+.footnote {
+  margin-top:50px;
+  font-size:9px; color:rgba(255,255,255,0.1);
+  letter-spacing:2px; text-align:center;
+  position:relative; z-index:2;
+}
+
+/* Particles */
+.particle {
+  position:fixed; border-radius:50%; pointer-events:none; z-index:1;
+  background:rgba(255,255,255,0.25); width:1px; height:1px;
+  animation:rise linear infinite;
+}
+@keyframes rise {
+  0%{transform:translateY(0) translateX(0);opacity:0}
+  5%{opacity:1} 90%{opacity:.2}
+  100%{transform:translateY(-100vh) translateX(var(--dx,0px));opacity:0}
+}
+
+/* Responsive */
+@media(max-width:580px){
+  .grid { grid-template-columns:1fr; max-width:360px; }
+  .brand { margin-bottom:40px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="brand">
+    <h1>НейроАкадемия</h1>
+    <div class="rule"></div>
+    <p class="sub">Фонетическая таблица · Solfeggio</p>
+    <p style="margin-top:10px">9 групп · 33 буквы · частоты 174–963 Hz</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- Sorter -->
+    <div class="card" style="--accent:rgba(100,160,255,0.4)">
+      <div class="card-num">Игра I</div>
+      <div class="card-title">Сортировщик</div>
+      <div class="card-sub">Solfeggio · Падение</div>
+      <div class="glyphs" id="glyphsSorter"></div>
+      <div class="card-desc">Буква падает сверху — направь её в правильную колонну. Каждая колонна соответствует частоте Solfeggio. Скорость нарастает с уровнем.</div>
+      <a class="play-btn" href="sorter.html">Играть →</a>
+    </div>
+
+    <!-- Quiz -->
+    <div class="card" style="--accent:rgba(160,100,255,0.4)">
+      <div class="card-num">Игра II</div>
+      <div class="card-title">Викторина</div>
+      <div class="card-sub">Solfeggio · Реакция</div>
+      <div class="glyphs" id="glyphsQuiz"></div>
+      <div class="card-desc">Буква появляется в центре — выбери её кодовую группу из четырёх вариантов. Таймер иссякает, серия множит очки.</div>
+      <a class="play-btn" href="game6.html">Играть →</a>
+    </div>
+
+    <!-- Tetris -->
+    <div class="card" style="--accent:rgba(255,215,0,0.35)">
+      <div class="card-num">Игра III</div>
+      <div class="card-title">НейроТетрис</div>
+      <div class="card-sub">Тетрис · Каскад</div>
+      <div class="glyphs" id="glyphsTetris"></div>
+      <div class="card-desc">Фигуры из букв падают на поле. 5+ клеток одной группы рядом — автоочистка. Полные ряды и каскады дают бонус.</div>
+      <a class="play-btn" href="index.html">Играть →</a>
+    </div>
+
+  </div>
+
+  <div class="footnote">Нажми на карточку или кнопку, чтобы открыть игру</div>
+
+</div>
+
+<script>
+const CLR={1:'#ff5f5f',2:'#ffd700',3:'#2ecc71',4:'#1ab8b8',5:'#4d88ff',6:'#7dce82',7:'#cccccc',8:'#ff4d8f',9:'#9b59b6'};
+const GROUPS={1:['И','С','Э'],2:['А','Й','П'],3:['Б','З','М'],4:['В','К','Ф'],5:['Д','Л','Х'],6:['Е','О','Ц'],7:['Ё','Н','Ъ'],8:['Г','У','Ч'],9:['Ж','Р','Ш']};
+
+function fillGlyphs(id, codes) {
+  const el = document.getElementById(id);
+  codes.forEach(code => {
+    const g = document.createElement('div');
+    g.className = 'glyph';
+    g.style.background = CLR[code] + '28';
+    g.style.borderColor = CLR[code] + '55';
+    g.style.color = CLR[code];
+    g.textContent = GROUPS[code][0];
+    el.appendChild(g);
+  });
+}
+fillGlyphs('glyphsSorter', [1,3,5,7,9]);
+fillGlyphs('glyphsQuiz',   [2,4,6,8,1]);
+fillGlyphs('glyphsTetris', [1,2,3,4,5]);
+
+// Click anywhere on card goes to link
+document.querySelectorAll('.card').forEach(card => {
+  card.style.cursor = 'pointer';
+  card.addEventListener('click', e => {
+    if (e.target.tagName === 'A') return;
+    const a = card.querySelector('a');
+    if (a) window.location.href = a.href;
+  });
+});
+
+// Particles
+for(let i=0;i<18;i++) setTimeout(()=>{
+  const p=document.createElement('div'); p.className='particle';
+  p.style.cssText=`left:${Math.random()*100}vw;bottom:0;--dx:${(Math.random()-.5)*40}px;animation-duration:${14+Math.random()*12}s;animation-delay:${Math.random()*10}s`;
+  document.body.appendChild(p);
+},i*400);
+</script>
+</body>
+</html>

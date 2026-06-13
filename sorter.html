@@ -49,6 +49,16 @@ canvas { display:block; position:fixed; inset:0; z-index:2; }
 .ld.on  { background:rgba(255,255,255,0.48); }
 .ld.off { background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1); }
 
+.hublink {
+  position:fixed; top:14px; left:16px; z-index:10;
+  border:1px solid rgba(255,255,255,0.07); border-radius:20px;
+  background:rgba(10,10,15,0.55); color:rgba(255,255,255,0.22);
+  font-size:8px; letter-spacing:2px; text-transform:uppercase;
+  padding:5px 12px; cursor:pointer; transition:all 0.3s;
+  text-decoration:none; font-family:'Inter',sans-serif;
+}
+.hublink:hover { color:rgba(255,255,255,0.55); border-color:rgba(255,255,255,0.16); }
+
 .pbtn {
   position:fixed; top:14px; right:16px; z-index:10;
   border:1px solid rgba(255,255,255,0.07); border-radius:20px;
@@ -130,6 +140,7 @@ canvas { display:block; position:fixed; inset:0; z-index:2; }
   </div>
   <div class="stat"><span class="sl">Уровень</span><span class="sv" id="hLevel">1</span></div>
 </div>
+<a class="hublink" href="hub.html">← игры</a>
 <button class="pbtn" id="pBtn" style="display:none" onclick="pauseGame()">II пауза</button>
 
 <canvas id="c"></canvas>
