@@ -216,9 +216,19 @@ body { overflow-y:auto; }
       <a class="play-btn" href="game6.html">Играть →</a>
     </div>
 
+    <!-- Match3 -->
+    <div class="card" style="--accent:rgba(46,204,113,0.4)">
+      <div class="card-num">Игра III</div>
+      <div class="card-title">Резонанс</div>
+      <div class="card-sub">Матч-3 · Solfeggio</div>
+      <div class="glyphs" id="glyphsMatch"></div>
+      <div class="card-desc">Меняй соседние буквы местами — три одинаковых кода рядом лопаются. Чем больше код, тем крупнее фигура. Три перемешивания при тупике.</div>
+      <a class="play-btn" href="match3.html">Играть →</a>
+    </div>
+
     <!-- Tetris -->
     <div class="card" style="--accent:rgba(255,215,0,0.35)">
-      <div class="card-num">Игра III</div>
+      <div class="card-num">Игра IV</div>
       <div class="card-title">НейроТетрис</div>
       <div class="card-sub">Тетрис · Каскад</div>
       <div class="glyphs" id="glyphsTetris"></div>
@@ -250,6 +260,7 @@ function fillGlyphs(id, codes) {
 }
 fillGlyphs('glyphsSorter', [1,3,5,7,9]);
 fillGlyphs('glyphsQuiz',   [2,4,6,8,1]);
+fillGlyphs('glyphsMatch',  [3,3,3,6,9]);
 fillGlyphs('glyphsTetris', [1,2,3,4,5]);
 
 // Click anywhere on card goes to link
